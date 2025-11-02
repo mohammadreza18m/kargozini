@@ -1,25 +1,27 @@
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
-  useAttributeOptions,
   useAttributes,
   useCreateAttribute,
-  useCreateAttributeOption,
   useCreateEntity,
   useCreateEntityKind,
   useDeleteAttribute,
-  useDeleteAttributeOption,
   useDeleteEntity,
   useDeleteEntityKind,
   useEntities,
   useEntityKinds,
   useUpdateAttribute,
-  useUpdateAttributeOption,
   useUpdateEntity,
   useUpdateEntityKind
 } from '@/api/hooks';
 import { DataTable } from '@/components/data-table';
 import { SectionCard } from '@/components/section-card';
+import { Button } from '@/components/button';
+import { ListHeader } from '@/components/list-header';
+import { KindModal } from '@/features/attributes/KindModal';
+import { EntityModal } from '@/features/attributes/EntityModal';
+import { AttributeModal } from '@/features/attributes/AttributeModal';
+import { OptionsModal } from '@/features/attributes/OptionsModal';
 
 type TabKey = 'kinds' | 'entities' | 'attributes';
 
@@ -93,10 +95,7 @@ export function AttributeManagementPage() {
   // Options modal state
   const [optionAttrId, setOptionAttrId] = useState<number | undefined>(undefined);
   const [optionAttrName, setOptionAttrName] = useState<string>('');
-  const { data: options = [] } = useAttributeOptions(optionAttrId);
-  const createOption = useCreateAttributeOption(optionAttrId);
-  const updateOption = useUpdateAttributeOption(optionAttrId);
-  const deleteOption = useDeleteAttributeOption(optionAttrId);
+  // options data now handled inside OptionsModal
 
   const kindLookup = useMemo(() => {
     const m = new Map<number, string>();
@@ -136,23 +135,7 @@ export function AttributeManagementPage() {
         <SectionCard
           title="مدیریت انواع موجودیت"
           description="انواع کلی مانند پرسنل، واحد سازمانی و ..."
-          action={
-            <div className="flex w-full items-end gap-3">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
-                onClick={() => { setEditingKind({ id: null, kindName: '' }); kindForm.reset({ kindName: '' }); setShowKindModal(true); }}
-              >
-                افزودن نوع
-              </button>
-              <input
-                className="ml-auto w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                placeholder="جستجو..."
-                value={kindSearch}
-                onChange={(e) => setKindSearch(e.target.value)}
-              />
-            </div>
-          }
+          action={<div className="w-full"><ListHeader left={<Button onClick={() => { setEditingKind({ id: null, kindName: '' }); kindForm.reset({ kindName: '' }); setShowKindModal(true); }}>افزودن نوع</Button>} searchValue={kindSearch} onSearchChange={setKindSearch} /></div>}
         >
           <DataTable
             data={(kinds as Array<{ rowId: number; kindName: string }>).filter((k) => String(k.kindName ?? '').toLowerCase().includes(kindSearch.trim().toLowerCase()))}
@@ -190,23 +173,7 @@ export function AttributeManagementPage() {
         <SectionCard
           title="مدیریت موجودیت‌ها"
           description="برای هر نوع، موجودیت‌ها را ثبت و مدیریت کنید."
-          action={
-            <div className="flex w-full items-end gap-3">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
-                onClick={() => { setEditingEntity({ id: null, kindId: '', name: '' }); entityForm.reset({ kindId: '', name: '' }); setShowEntityModal(true); }}
-              >
-                افزودن موجودیت
-              </button>
-              <input
-                className="ml-auto w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                placeholder="جستجو..."
-                value={entitySearch}
-                onChange={(e) => setEntitySearch(e.target.value)}
-              />
-            </div>
-          }
+          action={<div className="w-full"><ListHeader left={<Button onClick={() => { setEditingEntity({ id: null, kindId: '', name: '' }); entityForm.reset({ kindId: '', name: '' }); setShowEntityModal(true); }}>افزودن موجودیت</Button>} searchValue={entitySearch} onSearchChange={setEntitySearch} /></div>}
         >
           <div className="flex items-center gap-3">
             <label className="text-xs text-slate-600">فیلتر نوع:</label>
@@ -262,23 +229,7 @@ export function AttributeManagementPage() {
         <SectionCard
           title="مدیریت ویژگی‌ها"
           description="تعریف ویژگی‌ها برای انواع موجودیت و مدیریت گزینه‌ها"
-          action={
-            <div className="flex w-full items-end gap-3">
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
-                onClick={() => { setEditingAttrId(null); attributeForm.reset({ kindId: '', contextRowId: '', dataType: 'string', name: '', displayName: '', category: '' } as any); setShowAttrModal(true); }}
-              >
-                افزودن ویژگی
-              </button>
-              <input
-                className="ml-auto w-64 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                placeholder="جستجو..."
-                value={attrSearch}
-                onChange={(e) => setAttrSearch(e.target.value)}
-              />
-            </div>
-          }
+          action={<div className="w-full"><ListHeader left={<Button onClick={() => { setEditingAttrId(null); attributeForm.reset({ kindId: '', contextRowId: '', dataType: 'string', name: '', displayName: '', category: '' } as any); setShowAttrModal(true); }}>افزودن ویژگی</Button>} searchValue={attrSearch} onSearchChange={setAttrSearch} /></div>}
         >
           <div className="flex items-center gap-3">
             <label className="text-xs text-slate-600">فیلتر نوع:</label>
@@ -337,233 +288,13 @@ export function AttributeManagementPage() {
         </SectionCard>
       ) : null}
 
-      {optionAttrId ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-800">گزینه‌های ویژگی</h3>
-                <p className="text-sm text-slate-500">{optionAttrName}</p>
-              </div>
-              <button
-                className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700"
-                onClick={() => setOptionAttrId(undefined)}
-              >
-                بستن
-              </button>
-            </div>
+      <OptionsModal attributeId={optionAttrId} attributeName={optionAttrName} onClose={() => setOptionAttrId(undefined)} />
 
-            <form
-              className="mb-4 flex flex-wrap items-end gap-3"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const input = form.querySelector('input[name="newOption"]') as HTMLInputElement;
-                const value = input?.value?.trim();
-                if (value) {
-                  await createOption.mutateAsync({ value });
-                  input.value = '';
-                }
-              }}
-            >
-              <div>
-                <label className="block text-xs font-medium text-slate-600">گزینه جدید</label>
-                <input
-                  name="newOption"
-                  className="mt-1 w-72 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
-                />
-              </div>
-              <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">
-                افزودن
-              </button>
-            </form>
+      <KindModal open={showKindModal} initial={editingKind.id ? { kindName: editingKind.kindName } : undefined} onClose={() => setShowKindModal(false)} onSubmit={async (v) => { if (editingKind.id) await updateKind.mutateAsync({ id: editingKind.id, payload: v }); else await createKind.mutateAsync(v); setEditingKind({ id: null, kindName: '' }); kindForm.reset(); }} />
 
-            <DataTable
-              data={options as Array<{ rowId: number; value: string }>}
-              columns={[
-                { id: 'id', header: 'شناسه', accessor: (item) => item.rowId },
-                { id: 'value', header: 'مقدار', accessor: (item) => item.value },
-                {
-                  id: 'actions',
-                  header: 'عملیات',
-                  accessor: (item: any) => (
-                    <div className="flex gap-2 text-xs">
-                      <button
-                        className="rounded-lg border border-primary px-3 py-1 text-primary-600"
-                        onClick={async () => {
-                          const next = window.prompt('ویرایش مقدار گزینه:', item.value);
-                          if (next && next !== item.value) {
-                            await updateOption.mutateAsync({ optionId: item.rowId, value: next });
-                          }
-                        }}
-                      >
-                        ویرایش
-                      </button>
-                      <button
-                        className="rounded-lg bg-rose-600 px-3 py-1 text-white"
-                        onClick={() => window.confirm('حذف این گزینه؟') && deleteOption.mutate(item.rowId)}
-                      >
-                        حذف
-                      </button>
-                    </div>
-                  )
-                }
-              ]}
-            />
-          </div>
-        </div>
-      ) : null}
+      <EntityModal open={showEntityModal} kinds={kinds as any} initial={editingEntity.id ? { kindId: editingEntity.kindId, name: editingEntity.name } : undefined} onClose={() => setShowEntityModal(false)} onSubmit={async (v) => { const payload = { kindId: Number(v.kindId), name: v.name }; if (!payload.kindId) { window.alert('نوع موجودیت را انتخاب کنید'); return; } if (editingEntity.id) await updateEntity.mutateAsync({ id: editingEntity.id, payload }); else await createEntity.mutateAsync(payload); setEditingEntity({ id: null, kindId: '', name: '' }); entityForm.reset({ kindId: '', name: '' }); }} />
 
-      {showKindModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800">{editingKind.id ? 'ویرایش نوع موجودیت' : 'افزودن نوع موجودیت'}</h3>
-              <button className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700" onClick={() => setShowKindModal(false)}>بستن</button>
-            </div>
-            <form
-              className="space-y-3"
-              onSubmit={kindForm.handleSubmit(async (values) => {
-                if (editingKind.id) {
-                  await updateKind.mutateAsync({ id: editingKind.id, payload: values });
-                } else {
-                  await createKind.mutateAsync(values);
-                }
-                setShowKindModal(false);
-                setEditingKind({ id: null, kindName: '' });
-                kindForm.reset();
-              })}
-            >
-              <div>
-                <label className="block text-xs font-medium text-slate-600">عنوان نوع موجودیت</label>
-                <input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...kindForm.register('kindName', { required: true })} />
-              </div>
-              <div className="mt-2 flex items-center justify-end gap-2">
-                <button type="button" className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700" onClick={() => setShowKindModal(false)}>انصراف</button>
-                <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">{editingKind.id ? 'ثبت ویرایش' : 'ثبت نوع'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
-
-      {showEntityModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800">{editingEntity.id ? 'ویرایش موجودیت' : 'افزودن موجودیت'}</h3>
-              <button className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700" onClick={() => setShowEntityModal(false)}>بستن</button>
-            </div>
-            <form
-              className="grid gap-3 sm:grid-cols-2"
-              onSubmit={entityForm.handleSubmit(async (values) => {
-                const payload = { kindId: Number(values.kindId), name: values.name };
-                if (!payload.kindId) { window.alert('نوع موجودیت را انتخاب کنید'); return; }
-                if (editingEntity.id) {
-                  await updateEntity.mutateAsync({ id: editingEntity.id, payload });
-                } else {
-                  await createEntity.mutateAsync(payload);
-                }
-                setShowEntityModal(false);
-                setEditingEntity({ id: null, kindId: '', name: '' });
-                entityForm.reset({ kindId: '', name: '' });
-              })}
-            >
-              <div>
-                <label className="block text-xs font-medium text-slate-600">نوع موجودیت</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...entityForm.register('kindId')}>
-                  <option value="">انتخاب نوع</option>
-                  {(kinds as any[]).map((k) => (
-                    <option key={k.rowId} value={k.rowId}>{k.kindName}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">عنوان موجودیت</label>
-                <input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...entityForm.register('name', { required: true })} />
-              </div>
-              <div className="sm:col-span-2 mt-2 flex items-center justify-end gap-2">
-                <button type="button" className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700" onClick={() => setShowEntityModal(false)}>انصراف</button>
-                <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">{editingEntity.id ? 'ثبت ویرایش' : 'ثبت موجودیت'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
-
-      {showAttrModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800">{editingAttrId ? 'ویرایش ویژگی' : 'افزودن ویژگی'}</h3>
-              <button className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700" onClick={() => setShowAttrModal(false)}>بستن</button>
-            </div>
-            <form
-              className="grid gap-3 lg:grid-cols-3"
-              onSubmit={attributeForm.handleSubmit(async (values) => {
-                const payload = {
-                  kindId: Number(values.kindId),
-                  contextRowId: Number(values.contextRowId),
-                  name: values.name,
-                  displayName: values.displayName,
-                  category: values.category,
-                  dataType: values.dataType
-                } as any;
-                if (!payload.kindId || !payload.contextRowId) { window.alert('نوع و موجودیت را انتخاب کنید'); return; }
-                if (editingAttrId) {
-                  await updateAttribute.mutateAsync({ id: editingAttrId, payload });
-                } else {
-                  await createAttribute.mutateAsync(payload);
-                }
-                setShowAttrModal(false);
-                setEditingAttrId(null);
-                attributeForm.reset({ kindId: '', contextRowId: '', dataType: 'string', name: '', displayName: '', category: '' } as any);
-              })}
-            >
-              <div>
-                <label className="block text-xs font-medium text-slate-600">نوع موجودیت</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('kindId')}>
-                  <option value="">انتخاب نوع</option>
-                  {(kinds as any[]).map((k) => (<option key={k.rowId} value={k.rowId}>{k.kindName}</option>))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">موجودیت کانتکست</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('contextRowId', { required: true })} disabled={!selectedAttrKindId}>
-                  <option value="">انتخاب موجودیت</option>
-                  {(attrContextEntities as any[]).map((e) => (<option key={e.rowId} value={e.rowId}>{e.name} (#{e.rowId})</option>))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">نوع داده</label>
-                <select className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('dataType')}>
-                  <option value="string">رشته</option>
-                  <option value="real">عدد</option>
-                  <option value="date">تاریخ</option>
-                  <option value="bool">بلی/خیر</option>
-                  <option value="json">JSON</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">نام سیستمی</label>
-                <input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('name', { required: true, minLength: 2 })} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">نام نمایشی</label>
-                <input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('displayName', { required: true, minLength: 2 })} />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-600">دسته</label>
-                <input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none" {...attributeForm.register('category', { required: true, minLength: 2 })} />
-              </div>
-              <div className="lg:col-span-3 mt-2 flex items-center justify-end gap-2">
-                <button type="button" className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700" onClick={() => setShowAttrModal(false)}>انصراف</button>
-                <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white">{editingAttrId ? 'ثبت ویرایش' : 'ثبت ویژگی'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      ) : null}
+      <AttributeModal open={showAttrModal} kinds={kinds as any} initial={editingAttrId ? { kindId: attributeForm.getValues('kindId'), contextRowId: attributeForm.getValues('contextRowId'), name: attributeForm.getValues('name'), displayName: attributeForm.getValues('displayName'), category: attributeForm.getValues('category'), dataType: attributeForm.getValues('dataType') } as any : undefined} onClose={() => setShowAttrModal(false)} onSubmit={async (v) => { const payload = { kindId: Number(v.kindId), contextRowId: Number(v.contextRowId), name: v.name, displayName: v.displayName, category: v.category, dataType: v.dataType } as any; if (!payload.kindId || !payload.contextRowId) { window.alert('نوع و موجودیت را انتخاب کنید'); return; } if (editingAttrId) await updateAttribute.mutateAsync({ id: editingAttrId, payload }); else await createAttribute.mutateAsync(payload); setEditingAttrId(null); attributeForm.reset({ kindId: '', contextRowId: '', dataType: 'string', name: '', displayName: '', category: '' } as any); }} />
     </div>
   );
 }
