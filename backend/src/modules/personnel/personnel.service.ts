@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import type { PoolClient } from 'pg';
 import { query } from '../../db/pool';
 import { withTransaction } from '../../db/transaction';
-import type { AttributeUpsertInput, PersonCreateInput } from './personnel.schemas';
+import type { AttributeUpsertInput, PersonCreateInput, PersonVariableUpsertInput } from './personnel.schemas';
 
 export interface PersonListItem {
   rowId: number;
@@ -36,6 +36,25 @@ export interface PersonDetail extends PersonListItem {
     updatedAt: string | null;
     updatedBy: string | null;
   }>;
+}
+
+export async function listEntityMembers(entityId: number): Promise<Array<{ rowId: number; randId: string | null }>> {
+  const rows = await query<{ row_id: number; rand_id: string | null }>(
+    `SELECT row_id, rand_id FROM var.entity_member WHERE entity_id = $1 ORDER BY row_id`,
+    [entityId]
+  );
+  return rows.map((r) => ({ rowId: r.row_id, randId: r.rand_id }));
+}
+
+export async function addEntityMember(entityId: number): Promise<{ rowId: number; randId: string | null }> {
+  const rows = await query<{ row_id: number; rand_id: string | null }>(
+    `INSERT INTO var.entity_member (rand_id, entity_id)
+     VALUES ($1, $2)
+     RETURNING row_id, rand_id`,
+    [randomUUID(), entityId]
+  );
+  const r = rows[0];
+  return { rowId: r.row_id, randId: r.rand_id };
 }
 
 async function resolveKindId(client: PoolClient, input: PersonCreateInput): Promise<number> {
@@ -73,6 +92,14 @@ export async function createPerson(input: PersonCreateInput): Promise<PersonDeta
       [randomUUID(), kindId, input.name]
     );
 
+    // Create entity_member row linked to this entity
+    await client.query(
+      `INSERT INTO var.entity_member (rand_id, entity_id)
+       VALUES ($1, $2)
+       ON CONFLICT (entity_id) DO NOTHING`,
+      [person.rows[0].rand_id, person.rows[0].row_id]
+    );
+
     return {
       rowId: person.rows[0].row_id,
       name: person.rows[0].name,
@@ -105,7 +132,7 @@ export async function listPersonnel(): Promise<PersonListItem[]> {
   }));
 }
 
-export async function getPerson(rowId: number): Promise<PersonDetail | null> {
+export async function getPerson(rowId: number, opts?: { memberRowId?: number | null }): Promise<PersonDetail | null> {
   const people = await query<{
     row_id: number;
     name: string | null;
@@ -170,9 +197,10 @@ export async function getPerson(rowId: number): Promise<PersonDetail | null> {
   LEFT JOIN var.eav v
          ON v.attribute_id = a.row_id
         AND v.entity_id = $1
+        AND ($3::int IS NULL OR v.member_row_id = $3)
       WHERE a.kind_id = $2
       ORDER BY a.category NULLS LAST, a.display_name NULLS LAST, a.attribute_name`,
-    [rowId, person.kind_id]
+    [rowId, person.kind_id, opts?.memberRowId ?? null]
   );
 
   const attributeIds = attrs.map((attr) => attr.attribute_id);
@@ -332,7 +360,7 @@ export async function upsertPersonAttribute(
               AND e.attribute_id = ANY($2::int[])`,
           [personId, dependencies.rows.map((d) => d.depends_on_attribute_id)]
         )
-      : [];
+      : { rows: [] } as { rows: Array<{ attribute_id: number; value_string: string | null; value_real: number | null; value_date: Date | null; value_bool: boolean | null; value_json: unknown }> };
 
     const dependencyMap = new Map<number, unknown>();
     for (const row of dependencyValues.rows) {
@@ -409,8 +437,12 @@ export async function upsertPersonAttribute(
           throw Object.assign(new Error('Value does not match required pattern'), { status: 400 });
         }
       }
-      if (optionsValue && !optionsValue.includes(normalizedValue)) {
-        throw Object.assign(new Error('Value is not in allowed options'), { status: 400 });
+      if (optionsValue) {
+        const normStr = String(normalizedValue);
+        const optStrs = optionsValue.map((v) => String(v));
+        if (!optStrs.includes(normStr)) {
+          throw Object.assign(new Error('Value is not in allowed options'), { status: 400 });
+        }
       }
     }
     const existing = await client.query<{
@@ -422,8 +454,8 @@ export async function upsertPersonAttribute(
     }>(
       `SELECT value_string, value_real, value_date, value_bool, value_json
          FROM var.eav
-        WHERE entity_id = $1 AND attribute_id = $2`,
-      [personId, input.attributeId]
+        WHERE entity_id = $1 AND attribute_id = $2 AND COALESCE(member_row_id, 0) = COALESCE($3, 0)`,
+      [personId, input.attributeId, input.memberRowId ?? null]
     );
 
     const oldValue = existing.rowCount
@@ -467,25 +499,30 @@ export async function upsertPersonAttribute(
     const startTime = input.startTime ? new Date(input.startTime) : null;
     const endTime = input.endTime ? new Date(input.endTime) : null;
 
+    // Resolve member_row_id for this person: use provided or default (first)
+    let memberRowId = input.memberRowId ?? null;
+    if (!memberRowId) {
+      const mem = await client.query<{ row_id: number }>(
+        `SELECT row_id FROM var.entity_member WHERE entity_id = $1 ORDER BY row_id LIMIT 1`,
+        [personId]
+      );
+      memberRowId = mem.rows[0]?.row_id ?? null;
+    }
+
+    // Since ON CONFLICT cannot target partial index reliably, do delete+insert for exact member scope
+    await client.query(
+      `DELETE FROM var.eav WHERE entity_id = $1 AND attribute_id = $2 AND COALESCE(member_row_id, 0) = COALESCE($3, 0)`,
+      [personId, input.attributeId, memberRowId]
+    );
     await client.query(
       `INSERT INTO var.eav
-         (rand_id, entity_id, attribute_id, value_string, value_real, value_date, value_bool, value_json,
+         (rand_id, entity_id, member_row_id, attribute_id, value_string, value_real, value_date, value_bool, value_json,
           option_row_id, start_time, end_time, created_by, updated_by, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $12, now(), now())
-       ON CONFLICT (entity_id, attribute_id)
-       DO UPDATE SET value_string = EXCLUDED.value_string,
-                     value_real = EXCLUDED.value_real,
-                     value_date = EXCLUDED.value_date,
-                     value_bool = EXCLUDED.value_bool,
-                     value_json = EXCLUDED.value_json,
-                     option_row_id = EXCLUDED.option_row_id,
-                     start_time = EXCLUDED.start_time,
-                     end_time = EXCLUDED.end_time,
-                     updated_by = EXCLUDED.updated_by,
-                     updated_at = now()`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12, $13, $13, now(), now())`,
       [
         randomUUID(),
         personId,
+        memberRowId,
         input.attributeId,
         newColumns.value_string,
         newColumns.value_real,
@@ -510,5 +547,79 @@ export async function upsertPersonAttribute(
         [input.attributeId, personId, oldJson, newJson, updatedBy]
       );
     }
+  });
+}
+
+export async function calcHokmItems(personId: number, year: number): Promise<Array<{ itemName: string; itemRandId: string; points: number | null; amountRial: number | null }>> {
+  // resolve person's rand_id
+  const ent = await query<{ rand_id: string }>(`SELECT rand_id FROM var.entity WHERE row_id = $1`, [personId]);
+  if (ent.length === 0) {
+    throw Object.assign(new Error('Person not found'), { status: 404 });
+  }
+  const prRandId = ent[0].rand_id;
+  const rows = await query<{ item_name: string; item_rand_id: string; points: string | null; amount_rial: string | null }>(
+    `SELECT item_name, item_rand_id, points, amount_rial FROM var.fn_calc_hokm_items($1, $2)`,
+    [prRandId, year]
+  );
+  return rows.map((r) => ({
+    itemName: r.item_name,
+    itemRandId: r.item_rand_id,
+    points: r.points != null ? Number(r.points) : null,
+    amountRial: r.amount_rial != null ? Number(r.amount_rial) : null
+  }));
+}
+
+export async function upsertPersonVariableValue(personId: number, input: PersonVariableUpsertInput): Promise<void> {
+  await withTransaction(async (client) => {
+    const ent = await client.query<{ rand_id: string }>(
+      `SELECT rand_id FROM var.entity WHERE row_id = $1`,
+      [personId]
+    );
+    if (ent.rowCount === 0) {
+      throw Object.assign(new Error('Person not found'), { status: 404 });
+    }
+
+    // validate option belongs to variable
+    const opt = await client.query<{ variable_row_id: number }>(
+      `SELECT variable_row_id FROM var.order_variables_options WHERE row_id = $1`,
+      [input.optionRowId]
+    );
+    if (opt.rowCount === 0) {
+      throw Object.assign(new Error('Variable option not found'), { status: 400 });
+    }
+    if (opt.rows[0].variable_row_id !== input.variableRowId) {
+      throw Object.assign(new Error('Option does not belong to the specified variable'), { status: 400 });
+    }
+
+    // get variable rand_id for traceability
+    const varRow = await client.query<{ rand_id: string | null }>(
+      `SELECT rand_id FROM var.order_variables WHERE row_id = $1`,
+      [input.variableRowId]
+    );
+    const variableRandId = varRow.rows[0]?.rand_id ?? String(input.variableRowId);
+
+    const prRandId = ent.rows[0].rand_id;
+
+    // ensure one active row per person+variable: delete existing then insert
+    await client.query(
+      `DELETE FROM var.person_variable_values
+        WHERE pr_rand_id = $1 AND variable_row_id = $2`,
+      [prRandId, input.variableRowId]
+    );
+
+    await client.query(
+      `INSERT INTO var.person_variable_values
+         (rand_id, variable_row_id, variable_rand_id, pr_rand_id, start_time, end_time, option_row_id, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 1)`,
+      [
+        randomUUID(),
+        input.variableRowId,
+        variableRandId,
+        prRandId,
+        input.startTime ? new Date(input.startTime) : null,
+        input.endTime ? new Date(input.endTime) : null,
+        input.optionRowId
+      ]
+    );
   });
 }

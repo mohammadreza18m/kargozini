@@ -7,6 +7,7 @@ import {
   useDeleteRuleVariable,
   useDuplicateRuleScore,
   usePublishRuleScore,
+  useDeleteRuleScore,
   useRuleScores,
   useRuleSets,
   useRuleVariables,
@@ -121,6 +122,7 @@ export function RuleManagementPage() {
   const createScore = useCreateRuleScore();
   const createRuleSet = useCreateRuleSet();
   const publishScore = usePublishRuleScore();
+  const deleteScore = useDeleteRuleScore();
   const duplicateScore = useDuplicateRuleScore();
   const updateScore = useUpdateRuleScore();
 
@@ -811,6 +813,18 @@ export function RuleManagementPage() {
                     onClick={() => beginEditScore(item)}
                   >
                     ویرایش
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-lg bg-rose-600 px-3 py-1 text-white"
+                    onClick={() => {
+                      if (window.confirm('این فرمول حذف شود؟')) {
+                        deleteScore.mutate(item.rowId);
+                      }
+                    }}
+                    disabled={deleteScore.isPending}
+                  >
+                    حذف
                   </button>
                   <button
                     type="button"

@@ -202,7 +202,15 @@ export async function updateVariable(rowId: number, input: VariableUpdateInput):
 }
 
 export async function deleteVariable(rowId: number): Promise<void> {
-  await query('DELETE FROM var.order_variables WHERE row_id = $1', [rowId]);
+  // Application-level cascade as a fallback when DB FK is not ON DELETE CASCADE
+  await withTransaction(async (client: PoolClient) => {
+    await client.query('DELETE FROM var.order_variable_fact WHERE variable_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_variables_options WHERE variable_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_score_variables WHERE variable_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_items_variable_ratio WHERE variable_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.person_variable_values WHERE variable_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_variables WHERE row_id = $1', [rowId]);
+  });
 }
 
 export async function getVariableFacts(variableRowId: number): Promise<number[]> {
@@ -476,7 +484,15 @@ export async function updateScore(rowId: number, input: ScoreUpdateInput): Promi
 }
 
 export async function deleteScore(rowId: number): Promise<void> {
-  await query('DELETE FROM var.order_scores WHERE row_id = $1', [rowId]);
+  // Application-level cascade for legacy DBs without FK cascades
+  await withTransaction(async (client: PoolClient) => {
+    await client.query('DELETE FROM var.order_score_variables WHERE score_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_score_options WHERE score_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_score_fact WHERE score_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_items_score_ratio WHERE score_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.matrix_person_score_values WHERE score_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_scores WHERE row_id = $1', [rowId]);
+  });
 }
 
 export async function getScoreVariables(scoreRowId: number): Promise<number[]> {
@@ -607,7 +623,15 @@ export async function updateItem(rowId: number, input: ItemUpdateInput): Promise
 }
 
 export async function deleteItem(rowId: number): Promise<void> {
-  await query('DELETE FROM var.order_items WHERE row_id = $1', [rowId]);
+  // Application-level cascade for legacy DBs without FK cascades
+  await withTransaction(async (client: PoolClient) => {
+    await client.query('DELETE FROM var.order_items_variable_ratio WHERE item_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_items_score_ratio WHERE item_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_auth_item WHERE item_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.matrix_person_item_value WHERE item_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_hokm_item WHERE item_row_id = $1', [rowId]);
+    await client.query('DELETE FROM var.order_items WHERE row_id = $1', [rowId]);
+  });
 }
 
 export async function getScoreItemRatios(scoreRowId: number): Promise<Array<{ itemRowId: number; value: number | null }>> {

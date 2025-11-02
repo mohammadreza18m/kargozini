@@ -10,6 +10,7 @@ export type PersonCreateInput = z.infer<typeof personCreateSchema>;
 
 export const attributeUpsertSchema = z.object({
   attributeId: z.number().int(),
+  memberRowId: z.number().int().optional(),
   valueString: z.string().optional(),
   valueReal: z.number().optional(),
   valueDate: z
@@ -25,3 +26,13 @@ export const attributeUpsertSchema = z.object({
 });
 
 export type AttributeUpsertInput = z.infer<typeof attributeUpsertSchema>;
+
+export const personVariableUpsertSchema = z.object({
+  variableRowId: z.number().int(),
+  optionRowId: z.number().int(),
+  startTime: z.string().datetime().optional(),
+  endTime: z.string().datetime().optional(),
+  updatedBy: z.string().optional()
+});
+
+export type PersonVariableUpsertInput = z.infer<typeof personVariableUpsertSchema>;

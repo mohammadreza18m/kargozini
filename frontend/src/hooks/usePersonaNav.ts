@@ -35,13 +35,12 @@ const baseNav: Record<Persona, PersonaNavItem[]> = {
     { to: '/', label: 'Dashboard', icon: ChartBarIcon },
     { to: '/rules', label: 'Rule Management', icon: CogIcon },
     { to: '/attributes', label: 'Dynamic Attributes', icon: ClipboardDocumentListIcon },
-    { to: '/personnel', label: 'Personnel Profiles', icon: UserGroupIcon },
+    { to: '/members', label: 'Entity Members', icon: UserGroupIcon },
     { to: '/reports', label: 'Reports', icon: ChartBarIcon },
     { to: '/archive', label: 'Decree Archive', icon: ArchiveBoxIcon }
   ],
   'Regional Operator': [
     { to: '/', label: 'Home', icon: ChartBarIcon },
-    { to: '/personnel', label: 'Regional Personnel', icon: UserGroupIcon },
     { to: '/decrees', label: 'Issue Decree', icon: ClipboardDocumentListIcon },
     { to: '/archive', label: 'Regional Archive', icon: ArchiveBoxIcon }
   ],

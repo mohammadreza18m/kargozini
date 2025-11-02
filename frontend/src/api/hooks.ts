@@ -117,6 +117,22 @@ export function useUpdateRuleScore() {
   });
 }
 
+export function useDeleteRuleScore() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const { data } = await apiClient.delete(`/rules/scores/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ['rules', 'scores'] });
+    },
+    onError: () => {
+      window.alert('حذف فرمول با خطا مواجه شد');
+    }
+  });
+}
+
 export function useRuleSets() {
   return useQuery({
     queryKey: ['rules', 'ruleSets'],
@@ -489,6 +505,18 @@ export function usePersonnelDetail(id: number) {
   });
 }
 
+export function usePersonnelDetailByMember(id: number, memberRowId: number | null) {
+  return useQuery({
+    queryKey: ['personnel', id, 'member', memberRowId ?? 0],
+    queryFn: async () => {
+      const params = memberRowId ? { memberRowId } : undefined;
+      const { data } = await apiClient.get(`/personnel/${id}`, { params });
+      return data;
+    },
+    enabled: Boolean(id)
+  });
+}
+
 export function useCreatePerson() {
   const client = useQueryClient();
   return useMutation({
@@ -497,6 +525,30 @@ export function useCreatePerson() {
       return data;
     },
     onSuccess: () => client.invalidateQueries({ queryKey: ['personnel'] })
+  });
+}
+
+export function useEntityMembers(entityId: number | null) {
+  return useQuery({
+    queryKey: ['personnel', entityId, 'members'],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/personnel/${entityId}/members`);
+      return data as Array<{ rowId: number; randId: string | null }>;
+    },
+    enabled: Boolean(entityId)
+  });
+}
+
+export function useAddEntityMember(entityId: number | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await apiClient.post(`/personnel/${entityId}/members`);
+      return data as { rowId: number; randId: string | null };
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ['personnel', entityId, 'members'] });
+    }
   });
 }
 
@@ -509,6 +561,32 @@ export function useUpsertPersonAttribute(id: number) {
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ['personnel', id] });
+      client.invalidateQueries({ queryKey: ['personnel', id, 'member'] });
+    }
+  });
+}
+
+export function useCalcHokm(personId: number | null) {
+  return useMutation({
+    mutationFn: async ({ year }: { year: number }) => {
+      const { data } = await apiClient.post(`/personnel/${personId}/hokm`, { year });
+      return data as Array<{ itemName: string; itemRandId: string; points: number | null; amountRial: number | null }>;
+    }
+  });
+}
+
+export function useUpsertPersonVariable(personId: number | null) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { variableRowId: number; optionRowId: number; startTime?: string; endTime?: string; updatedBy?: string }) => {
+      const { data } = await apiClient.put(`/personnel/${personId}/variables`, payload);
+      return data;
+    },
+    onSuccess: () => {
+      if (personId) {
+        client.invalidateQueries({ queryKey: ['personnel', personId] });
+        client.invalidateQueries({ queryKey: ['personnel', personId, 'member'] });
+      }
     }
   });
 }
