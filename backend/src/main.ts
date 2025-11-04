@@ -6,5 +6,5 @@ import { logger } from './lib/logger';
 const httpServer = createServer(app);
 
 httpServer.listen(env.port, () => {
-  logger.info({ port: env.port }, 'Backend server listening');
+  logger.info({ port: env.port }, 'سرور پشتیبان روی پورت مشخص‌شده فعال است');
 });

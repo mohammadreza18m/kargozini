@@ -53,9 +53,9 @@ export function EntityMembersPage() {
 
   useEffect(() => {
     if (!historyTarget || !attributeHistory) return;
-    if (!attributeHistory.length) { window.alert('No history.'); setHistoryTarget(null); return; }
+    if (!attributeHistory.length) { window.alert('سوابقی وجود ندارد.'); setHistoryTarget(null); return; }
     const message = attributeHistory
-      .map((item: any) => `Value: ${JSON.stringify(item.value)} - Date: ${new Date(item.changedAt).toLocaleString()} - User: ${item.changedBy ?? 'unknown'}`)
+      .map((item: any) => `مقدار: ${JSON.stringify(item.value)} - تاریخ: ${new Date(item.changedAt).toLocaleString('fa-IR')} - کاربر: ${item.changedBy ?? 'نامشخص'}`)
       .join('\n');
     window.alert(message);
     setHistoryTarget(null);
@@ -99,10 +99,10 @@ export function EntityMembersPage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
       <div className="space-y-4">
-        <SectionCard title="Entities" description="Select entity to manage its members">
+        <SectionCard title="موجودیت‌ها" description="برای مدیریت اعضا یک موجودیت را انتخاب کنید">
           <div className="mb-3 grid gap-2 sm:grid-cols-2">
             <div>
-              <label className="block text-xs text-slate-600">Kind</label>
+              <label className="block text-xs text-slate-600">نوع</label>
               <select className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none" value={kindFilter ?? ''} onChange={(e) => setKindFilter(e.target.value ? Number(e.target.value) : undefined)}>
                 <option value="">All</option>
                 {(kinds as any[]).map((k) => (
@@ -111,8 +111,8 @@ export function EntityMembersPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-slate-600">Search</label>
-              <input className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="by name..." />
+              <label className="block text-xs text-slate-600">جستجو</label>
+              <input className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="براساس نام..." />
             </div>
           </div>
           <DataTable
@@ -124,19 +124,19 @@ export function EntityMembersPage() {
             })()}
             isLoading={isEntitiesLoading}
             columns={[
-              { id: 'id', header: 'ID', accessor: (it: any) => it.rowId },
-              { id: 'name', header: 'Name', accessor: (it: any) => it.name ?? '—' },
-              { id: 'actions', header: 'Actions', accessor: (it: any) => (
+              { id: 'id', header: 'شناسه', accessor: (it: any) => it.rowId },
+              { id: 'name', header: 'نام', accessor: (it: any) => it.name ?? '—' },
+              { id: 'actions', header: 'اقدامات', accessor: (it: any) => (
                 <button
                   type="button"
                   className={classNames('rounded-lg border px-3 py-1 text-xs font-medium transition', it.rowId === selectedEntityId ? 'border-primary bg-primary/10 text-primary-700' : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary-700')}
                   onClick={() => setSelectedEntityId(it.rowId)}
                 >
-                  Select
+                  انتخاب
                 </button>
               )}
             ]}
-            emptyMessage="No entities"
+            emptyMessage="موجودیتی یافت نشد"
           />
         </SectionCard>
       </div>

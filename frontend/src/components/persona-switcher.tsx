@@ -7,12 +7,18 @@ interface PersonaSwitcherProps {
   onChange: (value: string) => void;
 }
 
+const labels: Record<string, string> = {
+  Administrator: 'مدیر سامانه',
+  'Regional Operator': 'اپراتور منطقه',
+  Auditor: 'ناظر'
+};
+
 export function PersonaSwitcher({ options, value, onChange }: PersonaSwitcherProps) {
   return (
     <Listbox value={value} onChange={onChange}>
       <div className="relative">
         <Listbox.Button className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
-          <span>{value}</span>
+          <span>{labels[value] ?? value}</span>
           <ChevronUpDownIcon className="h-4 w-4 text-slate-400" aria-hidden="true" />
         </Listbox.Button>
         <Listbox.Options className="absolute z-20 mt-2 w-full rounded-lg border border-slate-200 bg-white shadow-lg focus:outline-none">
@@ -29,7 +35,7 @@ export function PersonaSwitcher({ options, value, onChange }: PersonaSwitcherPro
             >
               {({ selected }) => (
                 <>
-                  <span>{personaOption}</span>
+                  <span>{labels[personaOption] ?? personaOption}</span>
                   {selected ? <CheckIcon className="h-4 w-4 text-primary-600" /> : null}
                 </>
               )}

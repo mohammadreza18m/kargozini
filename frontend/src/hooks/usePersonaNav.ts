@@ -11,6 +11,12 @@ import {
 
 export type Persona = 'Administrator' | 'Regional Operator' | 'Auditor';
 
+const personaFa: Record<Persona, string> = {
+  Administrator: 'مدیر سامانه',
+  'Regional Operator': 'اپراتور منطقه',
+  Auditor: 'ناظر'
+};
+
 export interface PersonaNavItem {
   to: string;
   label: string;
@@ -32,22 +38,22 @@ const usePersonaStore = create<PersonaStoreState>((set) => ({
 
 const baseNav: Record<Persona, PersonaNavItem[]> = {
   Administrator: [
-    { to: '/', label: 'Dashboard', icon: ChartBarIcon },
-    { to: '/rules', label: 'Rule Management', icon: CogIcon },
-    { to: '/attributes', label: 'Dynamic Attributes', icon: ClipboardDocumentListIcon },
-    { to: '/members', label: 'Entity Members', icon: UserGroupIcon },
-    { to: '/reports', label: 'Reports', icon: ChartBarIcon },
-    { to: '/archive', label: 'Decree Archive', icon: ArchiveBoxIcon }
+    { to: '/', label: 'داشبورد', icon: ChartBarIcon },
+    { to: '/rules', label: 'مدیریت مقررات', icon: CogIcon },
+    { to: '/attributes', label: 'ویژگی‌های پویا', icon: ClipboardDocumentListIcon },
+    { to: '/members', label: 'اعضای موجودیت', icon: UserGroupIcon },
+    { to: '/reports', label: 'گزارش‌ها', icon: ChartBarIcon },
+    { to: '/archive', label: 'آرشیو احکام', icon: ArchiveBoxIcon }
   ],
   'Regional Operator': [
-    { to: '/', label: 'Home', icon: ChartBarIcon },
-    { to: '/decrees', label: 'Issue Decree', icon: ClipboardDocumentListIcon },
-    { to: '/archive', label: 'Regional Archive', icon: ArchiveBoxIcon }
+    { to: '/', label: 'خانه', icon: ChartBarIcon },
+    { to: '/decrees', label: 'صدور حکم', icon: ClipboardDocumentListIcon },
+    { to: '/archive', label: 'آرشیو منطقه‌ای', icon: ArchiveBoxIcon }
   ],
   Auditor: [
-    { to: '/', label: 'Overview', icon: ChartBarIcon },
-    { to: '/archive', label: 'Archive & Comparison', icon: ArchiveBoxIcon },
-    { to: '/reports', label: 'Analytics', icon: ChartBarIcon }
+    { to: '/', label: 'نمای کلی', icon: ChartBarIcon },
+    { to: '/archive', label: 'آرشیو و مقایسه', icon: ArchiveBoxIcon },
+    { to: '/reports', label: 'تحلیل‌ها', icon: ChartBarIcon }
   ]
 };
 
@@ -61,6 +67,7 @@ export function usePersonaNav() {
     persona,
     personaOptions,
     navItems,
-    switchPersona
+    switchPersona,
+    personaLabel: personaFa[persona]
   };
 }

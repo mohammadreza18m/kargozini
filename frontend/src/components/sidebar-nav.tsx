@@ -9,7 +9,7 @@ interface SidebarNavProps {
 
 export function SidebarNav({ persona, items }: SidebarNavProps) {
   return (
-    <nav aria-label={`Navigation for persona ${persona}`} className="flex-1 overflow-y-auto px-2 py-4">
+    <nav aria-label={`ناوبری برای نقش ${persona}`} className="flex-1 overflow-y-auto px-2 py-4">
       <ul className="space-y-1">
         {items.map((item) => {
           const Icon = item.icon;
