@@ -1434,11 +1434,27 @@ function HokmTab() {
   const replaceTypeItems = useReplaceHokmTypeItems(activeTypeId);
   const [typeItemMap, setTypeItemMap] = useState<Record<number, string>>({});
 
+  // modal state for per-type item linking
+  const [showTypeItemsModal, setShowTypeItemsModal] = useState(false);
+  const [modalTypeId, setModalTypeId] = useState<number | undefined>(undefined);
+  const { data: modalTypeItems = [] } = useHokmTypeItems(modalTypeId);
+  const replaceModalTypeItems = useReplaceHokmTypeItems(modalTypeId);
+  const [modalTypeItemMap, setModalTypeItemMap] = useState<Record<number, string>>({});
+  const [modalSelectedItemIds, setModalSelectedItemIds] = useState<number[]>([]);
+
   useEffect(() => {
     const m: Record<number, string> = {};
     for (const r of (typeItems as any[]) ?? []) m[r.itemRowId] = String(r.percent ?? '');
     setTypeItemMap(m);
   }, [typeItems]);
+
+  useEffect(() => {
+    const m: Record<number, string> = {};
+    for (const r of (modalTypeItems as any[]) ?? []) m[r.itemRowId] = String(r.percent ?? '');
+    setModalTypeItemMap(m);
+    const ids = ((modalTypeItems as any[]) ?? []).map((r) => r.itemRowId);
+    setModalSelectedItemIds(ids);
+  }, [modalTypeItems, showTypeItemsModal]);
 
   return (
     <>
@@ -1538,6 +1554,15 @@ function HokmTab() {
               accessor: (item: any) => (
                 <div className="flex gap-2 text-xs">
                   <button
+                    className="rounded-lg border border-primary px-3 py-1 text-primary-600"
+                    onClick={() => {
+                      setModalTypeId(item.rowId);
+                      setShowTypeItemsModal(true);
+                    }}
+                  >
+                    افزودن آیتم
+                  </button>
+                  <button
                     className="rounded-lg border border-amber-500 px-3 py-1 text-amber-600"
                     onClick={async () => {
                       const next = window.prompt('عنوان جدید نوع:', item.title);
@@ -1586,6 +1611,61 @@ function HokmTab() {
           <p className="text-sm text-slate-500">نوع حکم را انتخاب کنید.</p>
         )}
       </SectionCard>
+
+      {showTypeItemsModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-slate-800">اتصال آیتم‌ها به نوع حکم</h3>
+              <button className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700" onClick={() => setShowTypeItemsModal(false)}>بستن</button>
+            </div>
+            <div className="space-y-2">
+              {(items as any[]).map((it) => (
+                <div key={it.rowId} className="flex items-center gap-2">
+                  <label className={'flex w-64 cursor-pointer items-center gap-2 rounded-lg border px-3 py-1 text-sm ' + (modalSelectedItemIds.includes(it.rowId) ? 'border-primary text-primary-700' : 'border-slate-300 text-slate-700')}>
+                    <input
+                      type="checkbox"
+                      className="align-middle"
+                      checked={modalSelectedItemIds.includes(it.rowId)}
+                      onChange={(e) =>
+                        setModalSelectedItemIds((prev) =>
+                          e.target.checked ? [...prev, it.rowId] : prev.filter((id) => id !== it.rowId)
+                        )
+                      }
+                    />
+                    {it.name}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="درصد"
+                    className={'w-32 rounded-lg border px-2 py-1 text-sm focus:border-primary focus:outline-none ' + (modalSelectedItemIds.includes(it.rowId) ? 'border-slate-300' : 'border-slate-200 bg-slate-50 text-slate-400')}
+                    value={modalTypeItemMap[it.rowId] ?? ''}
+                    onChange={(e) => setModalTypeItemMap((m) => ({ ...m, [it.rowId]: e.target.value }))}
+                    disabled={!modalSelectedItemIds.includes(it.rowId)}
+                  />
+                </div>
+              ))}
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <button type="button" className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700" onClick={() => setShowTypeItemsModal(false)}>انصراف</button>
+                <button
+                  type="button"
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
+                  onClick={async () => {
+                    const rows = modalSelectedItemIds.map((itemRowId) => ({
+                      itemRowId,
+                      percent: Number(modalTypeItemMap[itemRowId] ?? '0')
+                    }));
+                    await replaceModalTypeItems.mutateAsync({ rows });
+                    setShowTypeItemsModal(false);
+                  }}
+                >
+                  ثبت اتصال‌ها
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
