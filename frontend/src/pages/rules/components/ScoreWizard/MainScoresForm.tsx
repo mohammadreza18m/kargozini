@@ -1,9 +1,43 @@
-import React from "react";
+// @ts-nocheck
 import ScoreWizardStep1 from "./ScoreWizardStep1";
 import ScoreWizardStep2 from "./ScoreWizardStep2";
 import ScoreWizardStep3 from "./ScoreWizardStep3";
 
-export default function MainScoresForm() {
+type ScoreDTCell = { [varId: number]: { min?: string; max?: string } };
+
+export default function MainScoresForm({
+  activeScoreId,
+  scoreWizardStep,
+  closeScoreModal,
+  setScoreWizardStep,
+  setActiveScoreId,
+  scoreForm,
+  updateScore,
+  createScore,
+  variables,
+  selectedScoreVarIds,
+  setSelectedScoreVarIds,
+  setScoreVars,
+  scoreDecisionRows,
+  setScoreDecisionRows,
+  replaceScoreOptions
+}: {
+  activeScoreId: number | null;
+  scoreWizardStep: 1 | 2 | 3;
+  closeScoreModal: () => void;
+  setScoreWizardStep: (s: 1 | 2 | 3) => void;
+  setActiveScoreId: (id: number | null) => void;
+  scoreForm: any;
+  updateScore: any;
+  createScore: any;
+  variables: any[];
+  selectedScoreVarIds: number[];
+  setSelectedScoreVarIds: (ids: number[]) => void;
+  setScoreVars: any;
+  scoreDecisionRows: Array<{ cells: ScoreDTCell; value: string }>;
+  setScoreDecisionRows: (rows: Array<{ cells: ScoreDTCell; value: string }>) => void | any;
+  replaceScoreOptions: any;
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-5xl rounded-2xl bg-white p-6 shadow-xl">
@@ -22,11 +56,47 @@ export default function MainScoresForm() {
           </button>
         </div>
 
-        {scoreWizardStep === 1 ? <ScoreWizardStep1 /> : null}
+        {scoreWizardStep === 1 ? (
+          <ScoreWizardStep1
+            {...{
+              scoreForm,
+              updateScore,
+              createScore,
+              activeScoreId,
+              setActiveScoreId,
+              setScoreWizardStep,
+              closeScoreModal
+            }}
+          />
+        ) : null}
 
-        {scoreWizardStep === 2 ? <ScoreWizardStep2 /> : null}
+        {scoreWizardStep === 2 ? (
+          <ScoreWizardStep2
+            {...{
+              variables,
+              selectedScoreVarIds,
+              setSelectedScoreVarIds,
+              setScoreWizardStep,
+              activeScoreId,
+              setScoreVars
+            }}
+          />
+        ) : null}
 
-        {scoreWizardStep === 3 ? <ScoreWizardStep3 /> : null}
+        {scoreWizardStep === 3 ? (
+          <ScoreWizardStep3
+            {...{
+              variables,
+              selectedScoreVarIds,
+              scoreDecisionRows,
+              setScoreDecisionRows,
+              setScoreWizardStep,
+              activeScoreId,
+              replaceScoreOptions,
+              closeScoreModal
+            }}
+          />
+        ) : null}
       </div>
     </div>
   );

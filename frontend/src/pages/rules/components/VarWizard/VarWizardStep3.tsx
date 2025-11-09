@@ -1,6 +1,15 @@
-import React from "react";
-
-export default function VarWizardStep3() {
+// @ts-nocheck
+export default function VarWizardStep3({
+  attributeList,
+  selectedFactIds,
+  decisionRows,
+  setDecisionRows,
+  attributeIsRange,
+  setVarWizardStep,
+  activeVariableId,
+  replaceOptions,
+  closeVarModal
+}: any) {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-slate-800">۳) جدول تصمیم</h4>

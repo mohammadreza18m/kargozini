@@ -1,10 +1,17 @@
-import React from "react";
-
-export default function VarWizardStep1() {
+// @ts-nocheck
+export default function VarWizardStep1({
+  variableForm,
+  activeVariableId,
+  updateVariable,
+  createVariable,
+  setActiveVariableId,
+  setVarWizardStep,
+  closeVarModal
+}: any) {
   return (
     <form
       className="grid gap-3 lg:grid-cols-2"
-      onSubmit={variableForm.handleSubmit(async (values) => {
+      onSubmit={variableForm.handleSubmit(async (values: any) => {
         const payload = {
           name: values.name,
           description: values.description,

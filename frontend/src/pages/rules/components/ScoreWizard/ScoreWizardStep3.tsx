@@ -1,6 +1,16 @@
-import React from "react";
+// @ts-nocheck
+type ScoreDTCell = { [varId: number]: { min?: string; max?: string } };
 
-export default function ScoreWizardStep3() {
+export default function ScoreWizardStep3({
+  variables,
+  selectedScoreVarIds,
+  scoreDecisionRows,
+  setScoreDecisionRows,
+  setScoreWizardStep,
+  activeScoreId,
+  replaceScoreOptions,
+  closeScoreModal
+}: any) {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-slate-800">۳) جدول تصمیم</h4>

@@ -1,4 +1,22 @@
-function HokmTab() {
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { DataTable } from "@/components/data-table";
+import { SectionCard } from "@/components/section-card";
+import {
+  useHokmYears,
+  useCreateHokmYear,
+  useUpdateHokmYear,
+  useDeleteHokmYear,
+  useHokmTypes,
+  useCreateHokmType,
+  useUpdateHokmType,
+  useDeleteHokmType,
+  useItems,
+  useHokmTypeItems,
+  useReplaceHokmTypeItems
+} from "@/api/hooks";
+
+export default function HokmTab() {
   const yearForm = useForm<{ year: number; yearpercent: number }>({});
   const { data: years = [] } = useHokmYears();
   const createYear = useCreateHokmYear();

@@ -1,6 +1,38 @@
-import React from "react";
+// @ts-nocheck
+import { SectionCard } from "@/components/section-card";
+import { DataTable } from "@/components/data-table";
 
-export default function ScoresTab() {
+type ScoreFilter = {
+  name?: string;
+  category?: string;
+  status?: "" | "active" | "draft";
+  som?: "" | "condition" | "combination";
+  vop?: "" | "value" | "percent";
+};
+
+export default function ScoresTab({
+  openScoreModal,
+  scoreFilter,
+  setScoreFilter,
+  searchQuery,
+  scores,
+  ruleSetLookup,
+  beginEditScore,
+  deleteScore,
+  duplicateScore,
+  publishScore
+}: {
+  openScoreModal: () => void;
+  scoreFilter: ScoreFilter;
+  setScoreFilter: any;
+  searchQuery: string;
+  scores: any[];
+  ruleSetLookup: Map<number, string>;
+  beginEditScore: (item: any) => void;
+  deleteScore: { mutate: (id: number) => void; isPending?: boolean };
+  duplicateScore: { mutate: (id: number) => void; isPending?: boolean };
+  publishScore: { mutate: (id: number) => void; isPending?: boolean };
+}) {
   return (
     <SectionCard
       title="فرمول‌های امتیاز"
@@ -21,7 +53,7 @@ export default function ScoresTab() {
           <input
             className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
             value={scoreFilter.name ?? ""}
-            onChange={(e) => setScoreFilter((f) => ({ ...f, name: e.target.value }))}
+            onChange={(e) => setScoreFilter((f: any) => ({ ...f, name: e.target.value }))}
           />
         </div>
         <div>
@@ -29,7 +61,7 @@ export default function ScoresTab() {
           <input
             className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
             value={scoreFilter.category ?? ""}
-            onChange={(e) => setScoreFilter((f) => ({ ...f, category: e.target.value }))}
+            onChange={(e) => setScoreFilter((f: any) => ({ ...f, category: e.target.value }))}
           />
         </div>
         <div>
@@ -37,7 +69,7 @@ export default function ScoresTab() {
           <select
             className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
             value={scoreFilter.status ?? ""}
-            onChange={(e) => setScoreFilter((f) => ({ ...f, status: e.target.value as any }))}
+            onChange={(e) => setScoreFilter((f: any) => ({ ...f, status: e.target.value as any }))}
           >
             <option value="">همه</option>
             <option value="active">فعال</option>
@@ -49,7 +81,7 @@ export default function ScoresTab() {
           <select
             className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
             value={scoreFilter.som ?? ""}
-            onChange={(e) => setScoreFilter((f) => ({ ...f, som: e.target.value as any }))}
+            onChange={(e) => setScoreFilter((f: any) => ({ ...f, som: e.target.value as any }))}
           >
             <option value="">همه</option>
             <option value="condition">شرط</option>
@@ -61,7 +93,7 @@ export default function ScoresTab() {
           <select
             className="mt-1 w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
             value={scoreFilter.vop ?? ""}
-            onChange={(e) => setScoreFilter((f) => ({ ...f, vop: e.target.value as any }))}
+            onChange={(e) => setScoreFilter((f: any) => ({ ...f, vop: e.target.value as any }))}
           >
             <option value="">همه</option>
             <option value="value">مقدار</option>

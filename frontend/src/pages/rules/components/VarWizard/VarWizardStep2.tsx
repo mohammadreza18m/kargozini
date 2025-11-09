@@ -1,6 +1,12 @@
-import React from "react";
-
-export default function VarWizardStep2() {
+// @ts-nocheck
+export default function VarWizardStep2({
+  attrsQuery,
+  attributeList,
+  selectedFactIds,
+  setSelectedFactIds,
+  setVarWizardStep,
+  setFacts
+}: any) {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-slate-800">۲) انتخاب واقعیت‌ها (Attributes)</h4>

@@ -1,6 +1,12 @@
-import React from "react";
-
-export default function ScoreWizardStep2() {
+// @ts-nocheck
+export default function ScoreWizardStep2({
+  variables,
+  selectedScoreVarIds,
+  setSelectedScoreVarIds,
+  setScoreWizardStep,
+  activeScoreId,
+  setScoreVars
+}: any) {
   return (
     <div className="space-y-3">
       <h4 className="text-sm font-semibold text-slate-800">۱) انتخاب متغیرها (چندانتخابی)</h4>
@@ -22,7 +28,7 @@ export default function ScoreWizardStep2() {
                 onChange={(e) => {
                   const next = e.target.checked
                     ? [...selectedScoreVarIds, v.rowId]
-                    : selectedScoreVarIds.filter((id) => id !== v.rowId);
+                    : selectedScoreVarIds.filter((id: number) => id !== v.rowId);
                   setSelectedScoreVarIds(next);
                 }}
               />

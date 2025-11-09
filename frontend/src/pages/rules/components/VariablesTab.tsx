@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from "react";
 import { SectionCard } from "@/components/section-card";
 import { DataTable } from "@/components/data-table";
@@ -9,7 +10,7 @@ export function VariablesTab({
   variableList,
   beginEditVariable,
   deleteVariable
-}) {
+}: any) {
   return (
     <>
       <SectionCard

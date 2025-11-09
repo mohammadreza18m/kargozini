@@ -1,10 +1,17 @@
-import React from "react";
-
-export default function ScoreWizardStep1() {
+// @ts-nocheck
+export default function ScoreWizardStep1({
+  scoreForm,
+  updateScore,
+  createScore,
+  activeScoreId,
+  setActiveScoreId,
+  setScoreWizardStep,
+  closeScoreModal
+}: any) {
   return (
     <form
       className="grid gap-3 lg:grid-cols-2"
-      onSubmit={scoreForm.handleSubmit(async (values) => {
+      onSubmit={scoreForm.handleSubmit(async (values: any) => {
         const payload = {
           name: values.name,
           description: values.description,

@@ -1,4 +1,17 @@
-function AuthsTab({ searchQuery }: { searchQuery: string }) {
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { DataTable } from "@/components/data-table";
+import { SectionCard } from "@/components/section-card";
+import {
+  useAuths,
+  useItems,
+  useCreateAuth,
+  useUpdateAuth,
+  useDeleteAuth,
+  useAuthItems
+} from "@/api/hooks";
+
+export default function AuthsTab({ searchQuery }: { searchQuery: string }) {
   const authForm = useForm<{ name: string; description?: string; percent?: number }>({});
   const { data: auths = [] } = useAuths();
   const { data: items = [] } = useItems();

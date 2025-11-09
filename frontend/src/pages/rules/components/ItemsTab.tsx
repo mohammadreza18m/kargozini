@@ -1,4 +1,17 @@
-function ItemsTab({ searchQuery }: { searchQuery: string }) {
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { DataTable } from "@/components/data-table";
+import { SectionCard } from "@/components/section-card";
+import {
+  useItems,
+  useRuleVariables,
+  useRuleScores,
+  useCreateItem,
+  useUpdateItem,
+  useDeleteItem
+} from "@/api/hooks";
+
+export default function ItemsTab({ searchQuery }: { searchQuery: string }) {
   const itemForm = useForm<{
     name: string;
     description?: string;
