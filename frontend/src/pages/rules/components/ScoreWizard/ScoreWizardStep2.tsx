@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export default function ScoreWizardStep2({
   variables,
   selectedScoreVarIds,
@@ -9,7 +9,7 @@ export default function ScoreWizardStep2({
 }: any) {
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-slate-800">۱) انتخاب متغیرها (چندانتخابی)</h4>
+      <h4 className="text-sm font-semibold text-slate-800">۲) انتخاب متغیرها</h4>
       <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 p-3">
         {(variables as any[]).map((v) => {
           const checked = selectedScoreVarIds.includes(v.rowId);
@@ -49,7 +49,7 @@ export default function ScoreWizardStep2({
             className="rounded-lg border border-slate-300 px-3 py-1 text-xs"
             onClick={() => setSelectedScoreVarIds([])}
           >
-            پاک‌کردن
+            پاک‌سازی
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export default function ScoreWizardStep2({
             className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
             onClick={() => setScoreWizardStep(1)}
           >
-            بازگشت
+            قبلی
           </button>
           <button
             className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"

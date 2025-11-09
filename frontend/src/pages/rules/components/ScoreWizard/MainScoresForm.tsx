@@ -53,15 +53,15 @@ export default function MainScoresForm({
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">
-              {activeScoreId ? "U^UOO…" : "O…"}
+              {activeScoreId ? "ویرایش امتیاز" : "افزودن امتیاز"}
             </h3>
-            <p className="mt-1 text-xs text-slate-500">Step {scoreWizardStep} of 4</p>
+            <p className="mt-1 text-xs text-slate-500">گام {scoreWizardStep} از ۴</p>
           </div>
           <button
             className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700"
             onClick={closeScoreModal}
           >
-            Close
+            بستن
           </button>
         </div>
 
@@ -122,4 +122,3 @@ export default function MainScoresForm({
     </div>
   );
 }
-

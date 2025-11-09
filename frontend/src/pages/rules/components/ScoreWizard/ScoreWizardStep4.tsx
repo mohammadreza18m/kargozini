@@ -40,7 +40,7 @@ export default function ScoreWizardStep4({
                         <div className="flex items-center gap-2">
                           <input
                             type="number"
-                            placeholder="from"
+                            placeholder="از"
                             className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
                             value={(row.cells[fid] as any)?.min ?? ""}
                             onChange={(e) => {
@@ -61,7 +61,7 @@ export default function ScoreWizardStep4({
                           />
                           <input
                             type="number"
-                            placeholder="to"
+                            placeholder="تا"
                             className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
                             value={(row.cells[fid] as any)?.max ?? ""}
                             onChange={(e) => {
@@ -221,4 +221,3 @@ export default function ScoreWizardStep4({
     </div>
   );
 }
-

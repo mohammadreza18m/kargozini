@@ -7,7 +7,7 @@ export default function ScoreWizardStep3({
 }: any) {
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-slate-800">3) ?????? ????????</h4>
+      <h4 className="text-sm font-semibold text-slate-800">3) افزودن ویژگی</h4>
       <div className="flex flex-wrap gap-2 rounded-xl border border-slate-200 p-3">
         {attributeList.map((a: any) => {
           const checked = selectedScoreAttrIds.includes(a.rowId);
@@ -40,13 +40,13 @@ export default function ScoreWizardStep3({
           className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700"
           onClick={() => setScoreWizardStep(2)}
         >
-          ????
+          قبلی
         </button>
         <button
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
           onClick={() => setScoreWizardStep(4)}
         >
-          ?????
+          ادامه
         </button>
       </div>
     </div>

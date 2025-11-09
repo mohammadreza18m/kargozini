@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 export default function ScoreWizardStep1({
   scoreForm,
   updateScore,
@@ -40,51 +40,51 @@ export default function ScoreWizardStep1({
       })}
     >
       <input
-        placeholder="name *"
+        placeholder="نام *"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...scoreForm.register("name", { required: true })}
       />
       <input
-        placeholder="description *"
+        placeholder="شرح *"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...scoreForm.register("description", { required: true })}
       />
       <input
-        placeholder="formula *"
+        placeholder="فرمول *"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...scoreForm.register("formula", { required: true })}
       />
       <input
-        placeholder="category"
+        placeholder="دسته‌بندی"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...scoreForm.register("category")}
       />
       <input
-        placeholder="min *"
+        placeholder="حداقل *"
         type="number"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...(scoreForm.register as any)("valueMin", { valueAsNumber: true })}
       />
       <input
-        placeholder="max *"
+        placeholder="حداکثر *"
         type="number"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...(scoreForm.register as any)("valueMax", { valueAsNumber: true })}
       />
       <input
-        placeholder="value_default *"
+        placeholder="مقدار پیش‌فرض *"
         type="number"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...(scoreForm.register as any)("valueDefault", { valueAsNumber: true })}
       />
       <input
-        placeholder="* start_time"
+        placeholder="* تاریخ شروع"
         type="date"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...(scoreForm.register as any)("startTime")}
       />
       <input
-        placeholder="* end_time"
+        placeholder="* تاریخ پایان"
         type="date"
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...(scoreForm.register as any)("endTime")}
@@ -93,8 +93,8 @@ export default function ScoreWizardStep1({
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
         {...scoreForm.register("som")}
       >
-        <option value="condition">شرط</option>
-        <option value="combination">ترکیب</option>
+        <option value="condition">شرطی</option>
+        <option value="combination">ترکیبی</option>
       </select>
       <select
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
@@ -115,7 +115,7 @@ export default function ScoreWizardStep1({
           type="submit"
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white"
         >
-          ذخیره و ادامه
+          ادامه
         </button>
       </div>
     </form>
