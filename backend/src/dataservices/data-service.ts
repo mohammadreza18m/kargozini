@@ -74,6 +74,7 @@ export class DataService {
       kindId: a.kindId,
       contextRowId: a.contextRowId,
       name: a.attributeName,
+      som: a.attributeSom ?? null,
       displayName: a.displayName,
       description: a.description,
       category: a.category,

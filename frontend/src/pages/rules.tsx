@@ -87,7 +87,7 @@ type VariableRecord = {
   endTime: string | null;
 };
 
-type AttributeRecord = { rowId: number; name: string; displayName?: string | null };
+type AttributeRecord = { rowId: number; name: string; displayName?: string | null; som: number | null };
 
 export function RuleManagementPage() {
   const [tab, setTab] = useState<'variables' | 'scores' | 'items' | 'auths' | 'hokm'>('variables');
@@ -163,8 +163,15 @@ export function RuleManagementPage() {
   const attributeList = (attrs as any[]).map((a) => ({
     rowId: a.rowId,
     name: a.name,
-    displayName: a.displayName
+    displayName: a.displayName,
+    som: typeof a.som === 'number' ? a.som : typeof a.attributeSom === 'number' ? a.attributeSom : null
   })) as AttributeRecord[];
+  const attributeSomLookup = useMemo(() => {
+    const map = new Map<number, number>();
+    attributeList.forEach((attr) => map.set(attr.rowId, attr.som ?? 0));
+    return map;
+  }, [attributeList]);
+  const attributeIsRange = (attributeId: number) => (attributeSomLookup.get(attributeId) ?? 0) === 1;
 
   // utility: composition row type
   type DTCell = { [attrId: number]: { min?: string; max?: string } | number | '' };
@@ -528,9 +535,11 @@ export function RuleManagementPage() {
                     <tbody className="divide-y divide-slate-200 bg-white">
                       {decisionRows.map((row, idx) => (
                         <tr key={idx}>
-                          {selectedFactIds.map((fid) => (
-                            <td key={fid} className="px-3 py-2">
-                              {variableForm.watch('som') === 'condition' ? (
+                          {selectedFactIds.map((fid) => {
+                            const usesRange = attributeIsRange(fid);
+                            return (
+                              <td key={fid} className="px-3 py-2">
+                                {usesRange ? (
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="number"
@@ -596,8 +605,9 @@ export function RuleManagementPage() {
                                   })()}
                                 </select>
                               )}
-                            </td>
-                          ))}
+                              </td>
+                            );
+                          })}
                           <td className="px-3 py-2">
                             <input
                               className="w-40 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-primary focus:outline-none"
@@ -623,11 +633,9 @@ export function RuleManagementPage() {
                     className="rounded-lg border border-primary px-4 py-1 text-sm text-primary-600"
                     onClick={() => {
                       const baseCells: any = {};
-                      if (variableForm.watch('som') === 'condition') {
-                        selectedFactIds.forEach((id) => (baseCells[id] = { min: '', max: '' }));
-                      } else {
-                        selectedFactIds.forEach((id) => (baseCells[id] = ''));
-                      }
+                      selectedFactIds.forEach((id) => {
+                        baseCells[id] = attributeIsRange(id) ? { min: '', max: '' } : '';
+                      });
                       setDecisionRows((rows) => [...rows, { cells: baseCells, value: '' } as any]);
                     }}
                   >
@@ -637,40 +645,45 @@ export function RuleManagementPage() {
                     type="button"
                     className="rounded-lg border border-amber-500 px-4 py-1 text-sm text-amber-600"
                     onClick={async () => {
+                      const optionFactIds = selectedFactIds.filter((fid) => !attributeIsRange(fid));
+                      const rangeFactIds = selectedFactIds.filter((fid) => attributeIsRange(fid));
                       const w = window as any;
                       const cache: Record<number, any[]> = (w.__attrOptionsCache = w.__attrOptionsCache || {});
                       await Promise.all(
-                        selectedFactIds.map(async (fid) => {
+                        optionFactIds.map(async (fid) => {
                           if (!cache[fid]) {
                             const resp = await fetch(`/api/attributes/${fid}/options`, { credentials: 'include' });
                             cache[fid] = await resp.json();
                           }
                         })
                       );
-                      const arrays = selectedFactIds.map((fid) => (cache[fid] ?? []).map((o: any) => o.rowId));
-                      if (arrays.some((a) => a.length === 0)) {
+                      const arrays = optionFactIds.map((fid) => (cache[fid] ?? []).map((o: any) => o.rowId));
+                      if (arrays.length > 0 && arrays.some((a) => a.length === 0)) {
                         window.alert('برای برخی ویژگی‌ها گزینه‌ای تعریف نشده است.');
                         return;
                       }
-                      if (variableForm.watch('som') === 'condition') {
+                      if (optionFactIds.length === 0) {
                         const baseCells: any = {};
-                        selectedFactIds.forEach((fid) => (baseCells[fid] = { min: '', max: '' }));
+                        rangeFactIds.forEach((fid) => (baseCells[fid] = { min: '', max: '' }));
                         setDecisionRows((rows) => [...rows, { cells: baseCells, value: '' } as any]);
-                      } else {
-                        const product: number[][] = arrays.reduce(
-                          (acc, curr) => acc.flatMap((prev) => curr.map((c) => [...prev, c])),
-                          [[]] as number[][]
-                        );
-                        const newRows = product.map((combo) => {
-                          const cells: any = {};
-                          combo.forEach((optId, idx) => {
-                            const fid = selectedFactIds[idx];
-                            cells[fid] = optId;
-                          });
-                          return { cells, value: '' } as any;
-                        });
-                        setDecisionRows(newRows);
+                        return;
                       }
+                      const product: number[][] = arrays.reduce(
+                        (acc, curr) => acc.flatMap((prev) => curr.map((c) => [...prev, c])),
+                        [[]] as number[][]
+                      );
+                      const newRows = product.map((combo) => {
+                        const cells: any = {};
+                        combo.forEach((optId, idx) => {
+                          const fid = optionFactIds[idx];
+                          cells[fid] = optId;
+                        });
+                        rangeFactIds.forEach((fid) => {
+                          cells[fid] = { min: '', max: '' };
+                        });
+                        return { cells, value: '' } as any;
+                      });
+                      setDecisionRows(newRows);
                     }}
                   >
                     تولید خودکار ردیف‌ها
@@ -686,7 +699,7 @@ export function RuleManagementPage() {
                         const rows = decisionRows.map((r) => {
                           const parts = selectedFactIds.map((fid) => {
                             const cell = (r as any).cells[fid];
-                            if (variableForm.watch('som') === 'condition') {
+                            if (attributeIsRange(fid)) {
                               const min = (cell as any)?.min ?? '';
                               const max = (cell as any)?.max ?? '';
                               return `${fid}:${min}||${max}`;
