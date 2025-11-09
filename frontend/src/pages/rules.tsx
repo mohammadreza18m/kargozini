@@ -280,13 +280,15 @@ export function RuleManagementPage() {
 
   // "Add Score" modal wizard state (inside component scope)
   const [showScoreModal, setShowScoreModal] = useState(false);
-  const [scoreWizardStep, setScoreWizardStep] = useState<1 | 2 | 3>(1);
+  const [scoreWizardStep, setScoreWizardStep] = useState<1 | 2 | 3 | 4>(1);
   const [activeScoreId, setActiveScoreId] = useState<number | null>(null);
   const scoreVarsQuery = useScoreVariables(activeScoreId ?? undefined);
   const setScoreVars = useSetScoreVariables(activeScoreId ?? undefined);
   const scoreOptionsQuery = useScoreOptions(activeScoreId ?? undefined);
   const replaceScoreOptions = useReplaceScoreOptions(activeScoreId ?? undefined);
+  
   const [selectedScoreVarIds, setSelectedScoreVarIds] = useState<number[]>([]);
+  const [selectedScoreAttrIds, setSelectedScoreAttrIds] = useState<number[]>([]);
   type ScoreDTCell = { [varId: number]: { min?: string; max?: string } };
   const [scoreDecisionRows, setScoreDecisionRows] = useState<
     Array<{ cells: ScoreDTCell; value: string }>
@@ -329,6 +331,7 @@ export function RuleManagementPage() {
     setScoreWizardStep(1);
     setActiveScoreId(null);
     setSelectedScoreVarIds([]);
+    setSelectedScoreAttrIds([]);
     setScoreDecisionRows([]);
   };
   const closeScoreModal = () => setShowScoreModal(false);
@@ -417,23 +420,29 @@ export function RuleManagementPage() {
 
       {tab === "scores" && showScoreModal ? (
         <MainScoresForm
-          {...{
-            activeScoreId,
-            scoreWizardStep,
-            closeScoreModal,
-            setScoreWizardStep,
-            setActiveScoreId,
-            scoreForm,
-            updateScore,
-            createScore,
-            variables,
-            selectedScoreVarIds,
-            setSelectedScoreVarIds,
-            setScoreVars,
-            scoreDecisionRows,
-            setScoreDecisionRows,
-            replaceScoreOptions
-          }}
+          {
+            ...{
+              activeScoreId,
+              scoreWizardStep,
+              closeScoreModal,
+              setScoreWizardStep,
+              setActiveScoreId,
+              scoreForm,
+              updateScore,
+              createScore,
+              variables,
+              selectedScoreVarIds,
+              setSelectedScoreVarIds,
+              setScoreVars,
+              attributeList,
+              attributeIsRange,
+              selectedScoreAttrIds,
+              setSelectedScoreAttrIds,
+              scoreDecisionRows,
+              setScoreDecisionRows,
+              replaceScoreOptions
+            }
+          }
         />
       ) : null}
 
@@ -445,4 +454,11 @@ export function RuleManagementPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
 

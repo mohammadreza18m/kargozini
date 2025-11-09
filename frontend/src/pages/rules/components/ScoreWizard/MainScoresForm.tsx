@@ -2,6 +2,7 @@
 import ScoreWizardStep1 from "./ScoreWizardStep1";
 import ScoreWizardStep2 from "./ScoreWizardStep2";
 import ScoreWizardStep3 from "./ScoreWizardStep3";
+import ScoreWizardStep4 from "./ScoreWizardStep4";
 
 type ScoreDTCell = { [varId: number]: { min?: string; max?: string } };
 
@@ -18,14 +19,18 @@ export default function MainScoresForm({
   selectedScoreVarIds,
   setSelectedScoreVarIds,
   setScoreVars,
+  attributeList,
+  attributeIsRange,
+  selectedScoreAttrIds,
+  setSelectedScoreAttrIds,
   scoreDecisionRows,
   setScoreDecisionRows,
   replaceScoreOptions
 }: {
   activeScoreId: number | null;
-  scoreWizardStep: 1 | 2 | 3;
+  scoreWizardStep: 1 | 2 | 3 | 4;
   closeScoreModal: () => void;
-  setScoreWizardStep: (s: 1 | 2 | 3) => void;
+  setScoreWizardStep: (s: 1 | 2 | 3 | 4) => void;
   setActiveScoreId: (id: number | null) => void;
   scoreForm: any;
   updateScore: any;
@@ -34,6 +39,10 @@ export default function MainScoresForm({
   selectedScoreVarIds: number[];
   setSelectedScoreVarIds: (ids: number[]) => void;
   setScoreVars: any;
+  attributeList: any[];
+  attributeIsRange: (id: number) => boolean;
+  selectedScoreAttrIds: number[];
+  setSelectedScoreAttrIds: (ids: number[]) => void;
   scoreDecisionRows: Array<{ cells: ScoreDTCell; value: string }>;
   setScoreDecisionRows: (rows: Array<{ cells: ScoreDTCell; value: string }>) => void | any;
   replaceScoreOptions: any;
@@ -44,15 +53,15 @@ export default function MainScoresForm({
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-slate-800">
-              {activeScoreId ? "ویرایش امتیاز" : "افزودن امتیاز"}
+              {activeScoreId ? "U^UOO…" : "O…"}
             </h3>
-            <p className="mt-1 text-xs text-slate-500">گام {scoreWizardStep} از 3</p>
+            <p className="mt-1 text-xs text-slate-500">Step {scoreWizardStep} of 4</p>
           </div>
           <button
             className="rounded-lg bg-slate-100 px-3 py-1 text-sm text-slate-700"
             onClick={closeScoreModal}
           >
-            بستن
+            Close
           </button>
         </div>
 
@@ -86,8 +95,20 @@ export default function MainScoresForm({
         {scoreWizardStep === 3 ? (
           <ScoreWizardStep3
             {...{
-              variables,
-              selectedScoreVarIds,
+              attributeList,
+              selectedScoreAttrIds,
+              setSelectedScoreAttrIds,
+              setScoreWizardStep
+            }}
+          />
+        ) : null}
+
+        {scoreWizardStep === 4 ? (
+          <ScoreWizardStep4
+            {...{
+              attributeList,
+              attributeIsRange,
+              selectedScoreAttrIds,
               scoreDecisionRows,
               setScoreDecisionRows,
               setScoreWizardStep,
@@ -101,3 +122,4 @@ export default function MainScoresForm({
     </div>
   );
 }
+
